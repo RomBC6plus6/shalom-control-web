@@ -69,7 +69,7 @@ def generar_notificaciones(df_alertas):
         texto = (
             f"Hola {nombre}, te saludamos de Shalom. "
             f"Tu paquete con Nº de Guía {guia} tiene {dias} días en almacén. "
-            f"Por favor acércate a recogerlo para evitar devoluciones."
+            f"Por favor acércate a recogerlo para evitar cobro por almacenamiento o caso omiso, sera desechado."
         )
 
         mensaje_cod = quote(texto)
