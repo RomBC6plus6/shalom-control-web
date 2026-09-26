@@ -14,19 +14,20 @@ st.write(
 )
 
 # -----------------------------------------------------------------------------
-# FUNCIONES DE PROCESAMIENTO (NUESTRO MOTOR BACKEND)
+# FUNCIONES DE PROCESAMIENTO (MOTOR BACKEND)
 # -----------------------------------------------------------------------------
 
 def cargar_datos(archivo):
     if archivo.name.endswith(".csv"):
         df = pd.read_csv(archivo)
     else:
+        # Lee tanto .xlsx como .xls nativo de Shalom
         df = pd.read_excel(archivo)
 
     df.columns = df.columns.str.strip()
     df["F.SALIDA"] = pd.to_datetime(df["F.SALIDA"], errors="coerce")
     df["TELF. DESTINATARIO"] = (
-        df["TELF. DESTINATARIO"].astype(str).str.replace(".0", "", regex=False)
+        df["TELF. DESTINATARIO"].astype(str).str.replace(".0", "", regex=False).str.strip()
     )
     return df
 
@@ -45,10 +46,10 @@ def filtrar_datos(df, dias_min, dias_max):
 def generar_notificaciones(df_alertas):
     mensajes = []
     for _, fila in df_alertas.iterrows():
-        nombre = fila["NOMBRE CLIENTE"]
+        # Mapeo ajustado al Excel real de Shalom
+        nombre = fila["DESTINATARIO"]
         guia = fila["N° GUIA"]
         dias = fila["DIAS_EN_ALMACEN"]
-        ubicacion = fila["UBICACION"]
         telefono = str(fila["TELF. DESTINATARIO"]).strip()
 
         if not telefono.startswith("51") and len(telefono) == 9:
@@ -58,8 +59,8 @@ def generar_notificaciones(df_alertas):
 
         texto = (
             f"Hola {nombre}, te saludamos de Shalom. "
-            f"Tu paquete con Nº de Guía {guia} tiene {dias} días en almacén "
-            f"(Ubicación: {ubicacion}). Por favor acércate a recogerlo para evitar devoluciones."
+            f"Tu paquete con Nº de Guía {guia} tiene {dias} días en almacén. "
+            f"Por favor acércate a recogerlo para evitar devoluciones."
         )
 
         mensaje_cod = quote(texto)
@@ -70,7 +71,6 @@ def generar_notificaciones(df_alertas):
                 "Cliente": nombre,
                 "Guía": guia,
                 "Días Retenido": dias,
-                "Ubicación": ubicacion,
                 "Teléfono": telefono,
                 "Acción WhatsApp": enlace,
             }
@@ -95,10 +95,10 @@ if usar_maximo:
         "Días máximos:", min_value=dias_minimos + 1, value=30
     )
 
-# Cargar archivo Excel
+# Cargar archivo Excel (Soporte para .xls, .xlsx y .csv)
 archivo_subido = st.file_uploader(
-    "📁 Sube aquí el archivo descargado del sistema de Shalom (.xlsx o .csv)",
-    type=["xlsx", "csv"],
+    "📁 Sube aquí el archivo descargado del sistema de Shalom (.xls, .xlsx o .csv)",
+    type=["xls", "xlsx", "csv"],
 )
 
 if archivo_subido is not None:
